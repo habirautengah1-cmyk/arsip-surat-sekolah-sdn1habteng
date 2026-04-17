@@ -1,0 +1,66 @@
+// ==========================================
+// ARSIP SEKOLAH - Google Apps Script Backend
+// ==========================================
+// Repo: https://github.com/habirautengah1-cmyk
+arsip-surat-sekolah-sdn1habteng
+// Deskripsi: Sistem arsip surat masuk/keluar berbasis Google Sheets
+
+const CONFIG = {
+  FOLDER_ID: "https://drive.google.com/drive/folders/12PJTQzJ-KUdsg6P0UCBm4vhAecVu3NeB?usp=sharing", // Ganti dengan Folder ID Google Drive Anda
+  SHEET_NAMES: {
+    USERS: "Users",
+    SURAT_MASUK: "Surat_Masuk",
+    SURAT_KELUAR: "Surat_Keluar",
+    PENGATURAN: "Pengaturan"
+  }
+};
+
+function doGet(e) {
+  return HtmlService.createTemplateFromFile('Index')
+    .evaluate()
+    .setTitle('ArsipSekolah - Sistem Informasi Kearsipan')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+// ==========================================
+// SETUP AWAL
+// ==========================================
+function setupAwal() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // Setup Users
+  let sheetUsers = ss.getSheetByName(CONFIG.SHEET_NAMES.USERS);
+  if (!sheetUsers) {
+    sheetUsers = ss.insertSheet(CONFIG.SHEET_NAMES.USERS);
+    sheetUsers.appendRow(["id_user", "nama_lengkap", "username", "password", "role"]);
+    sheetUsers.appendRow(["U-001", "Administrator", "admin", "admin123", "Admin"]);
+  }
+
+  // Setup Surat Masuk
+  let sheetSM = ss.getSheetByName(CONFIG.SHEET_NAMES.SURAT_MASUK);
+  if (!sheetSM) {
+    sheetSM = ss.insertSheet(CONFIG.SHEET_NAMES.SURAT_MASUK);
+    sheetSM.appendRow(["id_surat", "tanggal_terima", "nomor_surat", "tanggal_surat", "asal_surat", "perihal", "url_file", "status_disposisi", "isi_disposisi", "penginput"]);
+  }
+
+  // Setup Surat Keluar
+  let sheetSK = ss.getSheetByName(CONFIG.SHEET_NAMES.SURAT_KELUAR);
+  if (!sheetSK) {
+    sheetSK = ss.insertSheet(CONFIG.SHEET_NAMES.SURAT_KELUAR);
+    sheetSK.appendRow(["id_surat", "tanggal_keluar", "nomor_surat", "tujuan", "perihal", "url_file", "penginput"]);
+  }
+
+  // Setup Pengaturan
+  let sheetPengaturan = ss.getSheetByName(CONFIG.SHEET_NAMES.PENGATURAN);
+  if (!sheetPengaturan) {
+    sheetPengaturan = ss.insertSheet(CONFIG.SHEET_NAMES.PENGATURAN);
+    sheetPengaturan.appendRow(["kunci", "nilai"]);
+    sheetPengaturan.appendRow(["nama_sekolah", "Sistem Arsip Sekolah"]);
+    sheetPengaturan.appendRow(["logo_url", ""]);
+  }
+
+  SpreadsheetApp.getUi().alert("Setup Berhasil! Silakan refresh web app Anda.");
+}
+
+// [Copy seluruh fungsi lainnya dari versi sebelumnya: ambilPengaturan, simpanPengaturan, cekLogin, dll]

@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>ArsipSekolah</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .hidden { display: none !important; }
+        .dt-button { padding: 0.5rem 1rem; border-radius: 0.375rem; background-color: #3b82f6; color: white; border: none; cursor: pointer;}
+        table.dataTable tbody tr { background-color: transparent; }
+        .dataTables_wrapper .dataTables_filter input { border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.25rem; }
+        .logo-img { max-height: 80px; object-fit: contain; margin: 0 auto; }
+        
+        /* Custom badge styles */
+        .badge-selesai {
+            background-color: #dcfce7;
+            color: #166534;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+        .badge-menunggu {
+            background-color: #fef9c3;
+            color: #854d0e;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased text-gray-800">
+
+    <!-- LOGIN VIEW -->
+    <div id="login-view" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-96">
+            <div class="text-center mb-6 flex flex-col items-center">
+                <img id="logo-login" src="" alt="Logo" class="logo-img mb-3 hidden">
+                <i id="icon-login" class="fas fa-school text-5xl text-blue-600 mb-3"></i>
+                <h2 id="nama-login" class="text-2xl font-bold text-gray-800">Memuat...</h2>
+                <p class="text-sm text-gray-500 mt-1">Sistem Informasi Kearsipan</p>
+            </div>
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">Username</label>
+                    <input type="text" id="username" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <button type="submit" id="btn-login" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition">
+                    Masuk
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- APP VIEW -->
+    <div id="app-view" class="hidden h-screen flex overflow-hidden bg-gray-100">
+        
+        <!-- SIDEBAR -->
+        <div class="w-64 bg-slate-800 text-white flex flex-col">
+            <div class="h-20 flex items-center px-4 border-b border-slate-700 bg-slate-900">
+                <img id="logo-sidebar" src="" alt="Logo" class="w-10 h-10 object-contain mr-3 hidden rounded bg-white p-1">
+                <i id="icon-sidebar" class="fas fa-school text-2xl mr-3 text-blue-400"></i>
+                <span id="nama-sidebar" class="text-sm font-bold truncate">ArsipSekolah</span>
+            </div>
+            <div class="flex-1 overflow-y-auto py-4">
+                <nav class="space-y-1 px-2">
+                    <a href="#" onclick="showPage('dashboard')" id="nav-dashboard" class="nav-btn bg-slate-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md text-white">
+                        <i class="fas fa-home w-6 text-center mr-2 text-slate-300"></i> Dashboard
+                    </a>
+                    <a href="#" onclick="showPage('surat-masuk')" id="nav-surat-masuk" class="nav-btn group flex items-center px-2 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-slate-700 hover:text-white">
+                        <i class="fas fa-inbox w-6 text-center mr-2"></i> Surat Masuk
+                    </a>
+                    <a href="#" onclick="showPage('surat-keluar')" id="nav-surat-keluar" class="nav-btn group flex items-center px-2 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-slate-700 hover:text-white">
+                        <i class="fas fa-paper-plane w-6 text-center mr-2"></i> Surat Keluar
+                    </a>
+
+                    <!-- MENU ADMIN - Hanya untuk Admin -->
+                    <div id="menu-admin-container" class="hidden mt-6 pt-4 border-t border-slate-700">
+                        <p class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Administrator</p>
+                        <a href="#" onclick="showPage('users')" id="nav-users" class="nav-btn group flex items-center px-2 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-slate-700 hover:text-white">
+                            <i class="fas fa-users w-6 text-center mr-2"></i> Kelola User
+                        </a>
+                        <a href="#" onclick="showPage('pengaturan')" id="nav-pengaturan" class="nav-btn group flex items-center px-2 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-slate-700 hover:text-white">
+                            <i class="fas fa-cogs w-6 text-center mr-2"></i> Pengaturan Sekolah
+                        </a>
+                    </div>
+                </nav>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="h-16 bg-white shadow flex items-center justify-between px-6 z-10">
+                <h1 id="page-title" class="text-xl font-semibold text-gray-800">Dashboard</h1>
+                <div class="flex items-center">
+                    <div class="mr-4 text-right">
+                        <div id="user-name" class="text-sm font-bold text-gray-800">Nama User</div>
+                        <div id="user-role" class="text-xs text-blue-600">Role</div>
+                    </div>
+                    <button onclick="logout()" class="text-gray-500 hover:text-red-500 transition-colors" title="Keluar">
+                        <i class="fas fa-sign-out-alt text-xl"></i>
+                    </button>
+                </div>
+            </header>
+
+            <main class="flex-1 overflow-y-auto p-6">
+                
+                <!-- DASHBOARD -->
+                <div id="page-dashboard" class="page-content">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+                            <h3 class="text-gray-500 text-sm font-medium">Total Surat Masuk</h3>
+                            <p id="stat-sm" class="text-3xl font-bold text-gray-800 mt-2">0</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+                            <h3 class="text-gray-500 text-sm font-medium">Total Surat Keluar</h3>
+                            <p id="stat-sk" class="text-3xl font-bold text-gray-800 mt-2">0</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
+                            <h3 class="text-gray-500 text-sm font-medium">Menunggu Disposisi</h3>
+                            <p id="stat-pending" class="text-3xl font-bold text-gray-800 mt-2">0</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-medium text-gray-800 mb-4">5 Surat Masuk Terbaru</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tgl Terima</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Asal</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Perihal</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recent-sm-body" class="bg-white divide-y divide-gray-200 text-sm">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SURAT MASUK -->
+                <div id="page-surat-masuk" class="page-content hidden">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex justify-between mb-4">
+                            <h3 class="text-lg font-medium text-gray-800">Daftar Surat Masuk</h3>
+                            <button onclick="bukaModal('modal-sm')" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition shadow-sm">
+                                <i class="fas fa-plus mr-2"></i>Tambah Data
+                            </button>
+                        </div>
+                        <table id="table-sm" class="display w-full">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Tgl Surat</th>
+                                    <th>No. Surat</th>
+                                    <th>Asal</th>
+                                    <th>Perihal</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SURAT KELUAR -->
+                <div id="page-surat-keluar" class="page-content hidden">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex justify-between mb-4">
+                            <h3 class="text-lg font-medium text-gray-800">Daftar Surat Keluar</h3>
+                            <button onclick="bukaModal('modal-sk')" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition shadow-sm">
+                                <i class="fas fa-plus mr-2"></i>Tambah Data
+                            </button>
+                        </div>
+                        <table id="table-sk" class="display w-full">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Tgl Keluar</th>
+                                    <th>No. Surat</th>
+                                    <th>Tujuan</th>
+                                    <th>Perihal</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- USERS (Admin Only) -->
+                <div id="page-users" class="page-content hidden">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex justify-between mb-4">
+                            <h3 class="text-lg font-medium text-gray-800">Daftar Pengguna</h3>
+                            <button onclick="bukaModal('modal-user')" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition shadow-sm">
+                                <i class="fas fa-plus mr-2"></i>Tambah User
+                            </button>
+                        </div>
+                        <table id="table-user" class="display w-full">
+                            <thead>
+                                <tr>
+                                    <th>Nama</th>
+                                    <th>Username</th>
+                                    <th>Role</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- PENGATURAN (Admin Only) -->
+                <div id="page-pengaturan" class="page-content hidden">
+                    <div class="bg-white rounded-lg shadow p-8 max-w-2xl mx-auto border-t-4 border-slate-800">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                            <i class="fas fa-cogs mr-3 text-slate-600"></i> Pengaturan Identitas Sekolah
+                        </h3>
+                        <form id="form-pengaturan" onsubmit="submitPengaturan(event)">
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nama Sekolah / Instansi</label>
+                                <input type="text" id="set-nama" class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                <p class="text-xs text-gray-500 mt-1">Nama ini akan muncul di halaman login dan menu samping.</p>
+                            </div>
+                            
+                            <div class="mb-8">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Logo Sekolah (Opsional)</label>
+                                <div class="flex items-center gap-4">
+                                    <div class="flex-1">
+                                        <input type="file" id="set-logo" accept="image/*" class="w-full border border-gray-300 rounded-md p-2 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2">Upload gambar (PNG/JPG) jika ingin mengganti logo. Biarkan kosong jika tidak ingin mengubah logo saat ini.</p>
+                            </div>
+
+                            <div class="flex justify-end pt-4 border-t border-gray-200">
+                                <button type="submit" class="px-6 py-2 bg-slate-800 text-white font-medium rounded-md hover:bg-slate-900 transition-colors shadow-md flex items-center">
+                                    <i class="fas fa-save mr-2"></i> Simpan Pengaturan
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL SURAT MASUK -->
+    <div id="modal-sm" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-xl rounded-lg bg-white">
+            <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Input Surat Masuk</h3>
+            <form id="form-sm" onsubmit="submitSuratMasuk(event)">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Nomor Surat</label>
+                        <input type="text" id="sm-no" class="w-full border border-gray-300 rounded p-2 mt-1" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Tanggal Surat</label>
+                        <input type="date" id="sm-tgl" class="w-full border border-gray-300 rounded p-2 mt-1" required>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">Asal Surat</label>
+                    <input type="text" id="sm-asal" class="w-full border border-gray-300 rounded p-2 mt-1" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">Perihal</label>
+                    <textarea id="sm-perihal" class="w-full border border-gray-300 rounded p-2 mt-1" rows="2" required></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">Upload File (PDF/Gambar)</label>
+                    <input type="file" id="sm-file" class="w-full border border-gray-300 rounded p-2 mt-1" accept=".pdf,image/*" required>
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="tutupModal('modal-sm')" class="px-4 py-2 bg-gray-200 text-gray-800 font-medium rounded hover:bg-gray-300">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 shadow-sm">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL SURAT KELUAR -->
+    <div id="modal-sk" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-xl rounded-lg bg-white">
+            <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Input Surat Keluar</h3>
+            <form id="form-sk" onsubmit="submitSuratKeluar(event)">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Nomor Surat</label>
+                        <input type="text" id="sk-no" class="w-full border border-gray-300 rounded p-2 mt-1" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Tanggal Keluar</label>
+                        <input type="date" id="sk-tgl" class="w-full border border-gray-300 rounded p-2 mt-1" required>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">Tujuan</label>
+                    <input type="text" id="sk-tujuan" class="w-full border border-gray-300 rounded p-2 mt-1" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">Perihal</label>
+                    <textarea id="sk-perihal" class="w-full border border-gray-300 rounded p-2 mt-1" rows="2" required></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">Upload Arsip File</label>
+                    <input type="file" id="sk-file" class="w-full border border-gray-300 rounded p-2 mt-1" accept=".pdf,image/*" required>
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="tutupModal('modal-sk')" class="px-4 py-2 bg-gray-200 text-gray-800 font-medium rounded hover:bg-gray-300">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-green-600 text-white font-medium rounded hover:bg-green-700 shadow-sm">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL USER -->
+    <div id="modal-user" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-xl rounded-lg bg-white">
+            <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Tambah Pengguna Baru</h3>
+            <form id="form-user" onsubmit="submitUser(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                    <input type="text" id="u-nama" class="w-full border border-gray-300 rounded p-2 mt-1" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">Username</label>
+                    <input type="text" id="u-user" class="w-full border border-gray-300 rounded p-2 mt-1" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="u-pass" class="w-full border border-gray-300 rounded p-2 mt-1" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">Role</label>
+                    <select id="u-role" class="w-full border border-gray-300 rounded p-2 mt-1" required>
+                        <option value="Admin">Admin</option>
+                        <option value="Kepala Sekolah">Kepala Sekolah</option>
+                        <option value="Guru">Guru</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="tutupModal('modal-user')" class="px-4 py-2 bg-gray-200 text-gray-800 font-medium rounded hover:bg-gray-300">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white font-medium rounded hover:bg-indigo-700 shadow-sm">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // ==========================================
+        // DEKLARASI VARIABEL GLOBAL
+        // ==========================================
+        var currentUser = null;
+        var tableSM, tableSK, tableUser;
+
+        // ==========================================
+        // 1. LOAD PENGATURAN AWAL
+        // ==========================================
+        $(document).ready(function() {
+            google.script.run.withSuccessHandler(function(res) {
+                $('#nama-login, #nama-sidebar').text(res.nama_sekolah);
+                $('#set-nama').val(res.nama_sekolah); 
+                
+                if(res.logo_url && res.logo_url !== "") {
+                    $('#logo-login').attr('src', res.logo_url).removeClass('hidden');
+                    $('#icon-login').addClass('hidden');
+                    $('#logo-sidebar').attr('src', res.logo_url).removeClass('hidden');
+                    $('#icon-sidebar').addClass('hidden');
+                }
+            }).ambilPengaturan();
+        });
+
+        // ==========================================
+        // 2. AUTENTIKASI
+        // ==========================================
+        function handleLogin(e) {
+            e.preventDefault();
+            var u = $('#username').val();
+            var p = $('#password').val();
+            
+            Swal.fire({ 
+                title: 'Memeriksa kredensial...', 
+                allowOutsideClick: false, 
+                didOpen: function() { Swal.showLoading(); }
+            });
+            
+            google.script.run.withSuccessHandler(function(res) {
+                if(res.status === 'success') {
+                    currentUser = res.user;
+                    Swal.close();
+                    initApp();
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            }).cekLogin(u, p);
+        }
+
+        function initApp() {
+            $('#login-view').addClass('hidden');
+            $('#app-view').removeClass('hidden');
+            $('#user-name').text(currentUser.nama_lengkap);
+            $('#user-role').text(currentUser.role);
+
+            // Tampilkan menu Admin HANYA jika role = Admin
+            if(currentUser.role === 'Admin') {
+                $('#menu-admin-container').removeClass('hidden');
+            } else {
+                $('#menu-admin-container').addClass('hidden');
+            }
+
+            // Init DataTables
+            tableSM = $('#table-sm').DataTable({ responsive: true });
+            tableSK = $('#table-sk').DataTable({ responsive: true });
+            tableUser = $('#table-user').DataTable({ responsive: true });
+
+            showPage('dashboard');
+        }
+
+        function logout() {
+            $('#app-view').addClass('hidden');
+            $('#login-view').removeClass('hidden');
+            $('#login-form')[0].reset();
+            currentUser = null;
+            
+            // Sembunyikan menu admin
+            $('#menu-admin-container').addClass('hidden');
+            
+            // Reset navigasi
+            $('.nav-btn').removeClass('bg-slate-900 text-white').addClass('text-slate-300');
+            $('#nav-dashboard').addClass('bg-slate-900 text-white').removeClass('text-slate-300');
+
+            // Hancurkan DataTables
+            if ($.fn.DataTable.isDataTable('#table-sm')) $('#table-sm').DataTable().destroy();
+            if ($.fn.DataTable.isDataTable('#table-sk')) $('#table-sk').DataTable().destroy();
+            if ($.fn.DataTable.isDataTable('#table-user')) $('#table-user').DataTable().destroy();
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil Keluar',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+
+        // ==========================================
+        // 3. NAVIGASI SPA
+        // ==========================================
+        function showPage(pageId) {
+            // PROTEKSI: Halaman admin hanya untuk Admin
+            if ((pageId === 'users' || pageId === 'pengaturan') && currentUser.role !== 'Admin') {
+                Swal.fire('Akses Ditolak', 'Anda tidak memiliki izin mengakses halaman ini.', 'error');
+                return;
+            }
+
+            // Sembunyikan semua halaman
+            $('.page-content').addClass('hidden');
+            $('#page-' + pageId).removeClass('hidden');
+            
+            // Update judul
+            var titles = {
+                'dashboard': 'Dashboard Overview',
+                'surat-masuk': 'Manajemen Surat Masuk',
+                'surat-keluar': 'Manajemen Surat Keluar',
+                'users': 'Manajemen Pengguna',
+                'pengaturan': 'Pengaturan Identitas Sekolah'
+            };
+            $('#page-title').text(titles[pageId]);
+
+            // Update navigasi aktif
+            $('.nav-btn').removeClass('bg-slate-900 text-white').addClass('text-slate-300 hover:bg-slate-700 hover:text-white');
+            $('#nav-' + pageId).addClass('bg-slate-900 text-white').removeClass('text-slate-300 hover:bg-slate-700 hover:text-white');
+
+            // Load data sesuai halaman
+            if(pageId === 'dashboard') loadDashboard();
+            if(pageId === 'surat-masuk') loadSuratMasuk();
+            if(pageId === 'surat-keluar') loadSuratKeluar();
+            if(pageId === 'users' && currentUser.role === 'Admin') loadUsers();
+        }
+
+        // ==========================================
+        // 4. LOAD DATA & RENDER (TANPA TEMPLATE LITERAL)
+        // ==========================================
+        
+        // Fungsi helper untuk render status badge
+        function renderStatusBadge(status) {
+            var statusText = status || 'Menunggu Disposisi';
+            if (statusText === 'Selesai') {
+                return '<span class="badge-selesai">Selesai</span>';
+            } else {
+                return '<span class="badge-menunggu">' + statusText + '</span>';
+            }
+        }
+
+        function loadDashboard() {
+            google.script.run.withSuccessHandler(function(data) {
+                $('#stat-sm').text(data.totalSM);
+                $('#stat-sk').text(data.totalSK);
+                $('#stat-pending').text(data.totalPending);
+                
+                var html = '';
+                data.recentSM.forEach(function(s) {
+                    var badge = renderStatusBadge(s.statusdisposisi);
+                    html += '<tr>' +
+                                '<td class="px-6 py-4 whitespace-nowrap">' + (s.tanggalterima || '-') + '</td>' +
+                                '<td class="px-6 py-4">' + (s.asalsurat || '-') + '</td>' +
+                                '<td class="px-6 py-4">' + (s.perihal || '-') + '</td>' +
+                                '<td class="px-6 py-4 whitespace-nowrap">' + badge + '</td>' +
+                             '</tr>';
+                });
+                $('#recent-sm-body').html(html);
+            }).getDashboardStats();
+        }
+
+        function loadSuratMasuk() {
+            Swal.fire({ 
+                title: 'Memuat data...', 
+                allowOutsideClick: false, 
+                didOpen: function() { Swal.showLoading(); }
+            });
+
+            google.script.run
+                .withSuccessHandler(function(data) {
+                    try {
+                        // Hancurkan tabel lama
+                        if ($.fn.DataTable.isDataTable('#table-sm')) {
+                            $('#table-sm').DataTable().destroy();
+                        }
+                        
+                        // Kosongkan tbody
+                        $('#table-sm tbody').empty();
+
+                        // Buat tabel baru dengan data terbaru
+                        tableSM = $('#table-sm').DataTable({
+                            responsive: true,
+                            data: data,
+                            columns: [
+                                { data: null, render: function(data, type, row, meta) { return meta.row + 1; } },
+                                { data: 'tanggalsurat', defaultContent: '-' },
+                                { data: 'nomorsurat', defaultContent: '-' },
+                                { data: 'asalsurat', defaultContent: '-' },
+                                { data: 'perihal', defaultContent: '-' },
+                                { 
+                                    data: 'statusdisposisi',
+                                    defaultContent: 'Menunggu Disposisi',
+                                    render: function(data, type, row) {
+                                        return renderStatusBadge(data);
+                                    }
+                                },
+                                { 
+                                    data: null, 
+                                    render: function(row) {
+                                        var link = row.urlfile || row.url_file || row.file || row.url || "";
+                                        var btn = "";
+                                        
+                                        // Tombol Lihat File
+                                        if (link && link !== "#") {
+                                            btn += '<a href="' + link + '" target="_blank" rel="noopener noreferrer" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-md hover:bg-blue-200 transition text-xs mr-2">' +
+                                                      '<i class="fas fa-file-pdf mr-1"></i> Lihat' +
+                                                    '</a>';
+                                        } else {
+                                            btn += '<span class="text-xs text-gray-500 italic bg-gray-100 px-2 py-1 rounded mr-2">Tidak ada file</span>';
+                                        }
+                                        
+                                        // Tombol Disposisi untuk Kepala Sekolah
+                                        if (currentUser.role === 'Kepala Sekolah') {
+                                            if (row.statusdisposisi !== 'Selesai') {
+                                                btn += '<button onclick="beriDisposisi(' + row.rownumber + ')" class="bg-green-100 text-green-700 px-3 py-1 rounded-md hover:bg-green-200 transition shadow-sm text-xs">' +
+                                                            '<i class="fas fa-check-circle mr-1"></i> Disposisi' +
+                                                        '</button>';
+                                            } else {
+                                                btn += '<span class="text-xs text-green-600 font-medium"><i class="fas fa-check-double mr-1"></i> Sudah Didisposisi</span>';
+                                            }
+                                        }
+                                        
+                                        return btn;
+                                    }
+                                }
+                            ],
+                            order: [[1, 'desc']], // Urutkan berdasarkan tanggal surat descending
+                            language: {
+                                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json'
+                            }
+                        });
+                        
+                        Swal.close();
+                    } catch (err) {
+                        console.error('Error loadSuratMasuk:', err);
+                        Swal.fire('Error Tampilan', 'Terjadi kesalahan: ' + err.message, 'error');
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    Swal.fire('Gagal Mengambil Data', err.message, 'error');
+                })
+                .ambilData('Surat_Masuk');
+        }
+
+        function loadSuratKeluar() {
+            Swal.fire({ 
+                title: 'Memuat data...', 
+                allowOutsideClick: false, 
+                didOpen: function() { Swal.showLoading(); }
+            });
+            
+            google.script.run
+                .withSuccessHandler(function(data) {
+                    try {
+                        if ($.fn.DataTable.isDataTable('#table-sk')) {
+                            $('#table-sk').DataTable().destroy();
+                        }
+                        
+                        $('#table-sk tbody').empty();
+
+                        tableSK = $('#table-sk').DataTable({
+                            responsive: true,
+                            data: data,
+                            columns: [
+                                { data: null, render: function(data, type, row, meta) { return meta.row + 1; } },
+                                { data: 'tanggalkeluar', defaultContent: '-' },
+                                { data: 'nomorsurat', defaultContent: '-' },
+                                { data: 'tujuan', defaultContent: '-' },
+                                { data: 'perihal', defaultContent: '-' },
+                                { 
+                                    data: null, 
+                                    render: function(row) {
+                                        var link = row.urlfile || row.url_file || row.file || row.url || "";
+                                        if (link && link !== "#") {
+                                            return '<a href="' + link + '" target="_blank" rel="noopener noreferrer" class="bg-green-100 text-green-700 px-3 py-1 rounded-md hover:bg-green-200 transition text-xs">' +
+                                                      '<i class="fas fa-file-pdf mr-1"></i> Lihat Arsip' +
+                                                    '</a>';
+                                        }
+                                        return '<span class="text-xs text-gray-500 italic bg-gray-100 px-2 py-1 rounded">Tidak ada file</span>';
+                                    }
+                                }
+                            ],
+                            order: [[1, 'desc']],
+                            language: {
+                                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json'
+                            }
+                        });
+                        
+                        Swal.close();
+                    } catch (err) {
+                        Swal.fire('Error Tampilan', err.message, 'error');
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    Swal.fire('Gagal Mengambil Data', err.message, 'error');
+                })
+                .ambilData('Surat_Keluar');
+        }
+
+        function loadUsers() {
+            Swal.fire({ 
+                title: 'Memuat data...', 
+                allowOutsideClick: false, 
+                didOpen: function() { Swal.showLoading(); }
+            });
+            
+            google.script.run
+                .withSuccessHandler(function(data) {
+                    try {
+                        if ($.fn.DataTable.isDataTable('#table-user')) {
+                            $('#table-user').DataTable().destroy();
+                        }
+                        
+                        $('#table-user tbody').empty();
+
+                        tableUser = $('#table-user').DataTable({
+                            responsive: true,
+                            data: data,
+                            columns: [
+                                { data: 'namalengkap', defaultContent: '-' },
+                                { data: 'username', defaultContent: '-' },
+                                { 
+                                    data: 'role', 
+                                    defaultContent: '-',
+                                    render: function(data) {
+                                        var badgeClass = 'bg-gray-100 text-gray-800';
+                                        if (data === 'Admin') badgeClass = 'bg-red-100 text-red-800';
+                                        else if (data === 'Kepala Sekolah') badgeClass = 'bg-blue-100 text-blue-800';
+                                        else if (data === 'Guru') badgeClass = 'bg-green-100 text-green-800';
+                                        
+                                        return '<span class="' + badgeClass + ' px-2 py-1 rounded-full text-xs font-medium">' + data + '</span>';
+                                    }
+                                }
+                            ],
+                            language: {
+                                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json'
+                            }
+                        });
+                        
+                        Swal.close();
+                    } catch (err) {
+                        Swal.fire('Error Tampilan', err.message, 'error');
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    Swal.fire('Gagal Mengambil Data', err.message, 'error');
+                })
+                .ambilData('Users');
+        }
+
+        // ==========================================
+        // 5. MODAL & FORM HANDLERS
+        // ==========================================
+        function bukaModal(id) { 
+            $('#' + id).removeClass('hidden'); 
+        }
+        
+        function tutupModal(id) { 
+            $('#' + id).addClass('hidden'); 
+        }
+
+        function bacaFile(fileInputId) {
+            return new Promise(function(resolve, reject) {
+                var file = document.getElementById(fileInputId).files[0];
+                if (!file) resolve(null);
+                else {
+                    var reader = new FileReader();
+                    reader.onload = function(e) { 
+                        resolve({ 
+                            base64: e.target.result, 
+                            name: file.name, 
+                            mimeType: file.type 
+                        }); 
+                    };
+                    reader.onerror = function(e) { reject(e); };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        async function submitSuratMasuk(e) {
+            e.preventDefault();
+            Swal.fire({ 
+                title: 'Menyimpan & Mengunggah File...', 
+                allowOutsideClick: false, 
+                didOpen: function() { Swal.showLoading(); }
+            });
+            
+            var fileData = await bacaFile('sm-file');
+            var data = {
+                nomor_surat: $('#sm-no').val(), 
+                tanggal_surat: $('#sm-tgl').val(),
+                asal_surat: $('#sm-asal').val(), 
+                perihal: $('#sm-perihal').val(), 
+                penginput: currentUser.nama_lengkap
+            };
+
+            google.script.run
+                .withSuccessHandler(function(msg) {
+                    Swal.fire('Sukses', msg, 'success');
+                    tutupModal('modal-sm');
+                    $('#form-sm')[0].reset();
+                    loadSuratMasuk();
+                })
+                .withFailureHandler(function(err) {
+                    Swal.fire('Error', err.message, 'error');
+                })
+                .simpanSuratMasuk(data, fileData);
+        }
+
+        async function submitSuratKeluar(e) {
+            e.preventDefault();
+            Swal.fire({ 
+                title: 'Menyimpan & Mengunggah File...', 
+                allowOutsideClick: false, 
+                didOpen: function() { Swal.showLoading(); }
+            });
+            
+            var fileData = await bacaFile('sk-file');
+            var data = {
+                nomor_surat: $('#sk-no').val(), 
+                tanggal_keluar: $('#sk-tgl').val(),
+                tujuan: $('#sk-tujuan').val(), 
+                perihal: $('#sk-perihal').val(), 
+                penginput: currentUser.nama_lengkap
+            };
+
+            google.script.run
+                .withSuccessHandler(function(msg) {
+                    Swal.fire('Sukses', msg, 'success');
+                    tutupModal('modal-sk');
+                    $('#form-sk')[0].reset();
+                    loadSuratKeluar();
+                })
+                .withFailureHandler(function(err) {
+                    Swal.fire('Error', err.message, 'error');
+                })
+                .simpanSuratKeluar(data, fileData);
+        }
+
+        function submitUser(e) {
+            e.preventDefault();
+            Swal.fire({ 
+                title: 'Menyimpan...', 
+                allowOutsideClick: false, 
+                didOpen: function() { Swal.showLoading(); }
+            });
+            
+            var data = { 
+                nama_lengkap: $('#u-nama').val(), 
+                username: $('#u-user').val(), 
+                password: $('#u-pass').val(), 
+                role: $('#u-role').val() 
+            };
+            
+            google.script.run
+                .withSuccessHandler(function(msg) {
+                    Swal.fire('Sukses', msg, 'success');
+                    tutupModal('modal-user');
+                    $('#form-user')[0].reset();
+                    loadUsers();
+                })
+                .withFailureHandler(function(err) {
+                    Swal.fire('Error', err.message, 'error');
+                })
+                .simpanUser(data);
+        }
+
+        async function submitPengaturan(e) {
+            e.preventDefault();
+            Swal.fire({ 
+                title: 'Menyimpan Pengaturan...', 
+                allowOutsideClick: false, 
+                didOpen: function() { Swal.showLoading(); }
+            });
+            
+            var fileData = await bacaFile('set-logo');
+            var namaSekolah = $('#set-nama').val();
+
+            google.script.run
+                .withSuccessHandler(function(msg) {
+                    Swal.fire('Sukses', msg + ' Halaman akan dimuat ulang.', 'success').then(function() {
+                        location.reload();
+                    });
+                })
+                .withFailureHandler(function(err) {
+                    Swal.fire('Error', err.message, 'error');
+                })
+                .simpanPengaturan(namaSekolah, fileData);
+        }
+
+        // ==========================================
+        // 6. FITUR DISPOSISI
+        // ==========================================
+        function beriDisposisi(rowNumber) {
+            Swal.fire({
+                title: 'Beri Disposisi',
+                input: 'textarea',
+                inputLabel: 'Catatan / Instruksi Disposisi',
+                inputPlaceholder: 'Ketik instruksi disposisi di sini...',
+                inputAttributes: {
+                    'aria-label': 'Catatan disposisi'
+                },
+                showCancelButton: true,
+                confirmButtonText: 'Simpan Disposisi',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#10b981',
+                preConfirm: function(isi) {
+                    if (!isi || isi.trim() === '') {
+                        Swal.showValidationMessage('Catatan disposisi tidak boleh kosong!');
+                    }
+                    return isi;
+                }
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    var isiDisposisi = result.value.trim();
+                    
+                    Swal.fire({ 
+                        title: 'Menyimpan Disposisi...', 
+                        allowOutsideClick: false, 
+                        didOpen: function() { Swal.showLoading(); }
+                    });
+                    
+                    google.script.run
+                        .withSuccessHandler(function(msg) {
+                            console.log('Disposisi sukses:', msg);
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: msg,
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(function() {
+                                // Refresh tabel untuk menampilkan status terbaru
+                                loadSuratMasuk();
+                                // Jika di dashboard, refresh juga
+                                if (!$('#page-dashboard').hasClass('hidden')) {
+                                    loadDashboard();
+                                }
+                            });
+                        })
+                        .withFailureHandler(function(err) {
+                            console.error('Disposisi gagal:', err);
+                            Swal.fire('Error', 'Gagal menyimpan disposisi: ' + err.message, 'error');
+                        })
+                        .simpanDisposisi(rowNumber, isiDisposisi);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
